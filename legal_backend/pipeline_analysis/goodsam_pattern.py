@@ -499,9 +499,12 @@ def format_conditions(constraints):
 
 def get_dataframe(constraints):
     global df_geomap, df, df_fips_county
-    fips_col = df_geomap['FIPS']
     df_sub = df.copy(deep=True)
-    df_sub.insert(0,"FIPS",fips_col)
+    
+    if 'FIPS' not in df_sub.columns:
+        fips_col = df_geomap['FIPS']
+        df_sub.insert(0,"FIPS",fips_col)
+        
     conds = format_conditions(constraints)
 
     if len(conds) != 0:
