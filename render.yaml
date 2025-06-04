@@ -1,0 +1,30 @@
+services:
+  # Backend API service 
+  - type: web
+    name: legal-backend-api
+    env: docker
+    dockerfilePath: ./Dockerfile.backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "true"
+      - key: DATA_DIR
+        value: "/app/data"
+
+  # Frontend web application - using choropleth-dashboard as root
+  - type: web
+    name: choropleth-dashboard
+    env: node
+    rootDirectory: choropleth-dashboard
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        value: "https://legal-backend-api.onrender.com"

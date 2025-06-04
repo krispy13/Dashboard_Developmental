@@ -1,0 +1,62 @@
+# Use R base image
+FROM rocker/r-ver:4.2.0
+
+# Install system dependencies including those needed for RPy2
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libffi-dev \
+    build-essential \
+    # Required dependencies for RPy2
+    libpcre2-8-0 \
+    libpcre2-dev \
+    liblzma-dev \
+    libbz2-dev \
+    zlib1g-dev \
+    # Additional dependencies for R packages
+    libicu-dev \
+    libgit2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install R packages
+RUN R -e "install.packages(c('bartCause', 'rpart', 'randomForest'), repos='https://cran.rstudio.com/')"
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY backend_requirements.txt .
+
+RUN pip3 install --upgrade pip setuptools
+
+# Install Python dependencies (without RPy2)
+RUN pip3 install --no-cache-dir -r backend_requirements.txt
+
+# Install RPy2 separately with additional flags
+RUN pip3 install gunicorn rpy2==3.5.11 --no-build-isolation
+
+# Copy data files
+COPY data/ /app/data/
+
+# Copy application code
+COPY legal_backend/ /app/legal_backend/
+
+# Initialize application
+ENV FLASK_APP=legal_backend.pipeline_analysis.goodsam_pattern
+
+# Configure memory optimization parameters
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONHASHSEED=random
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV MPLBACKEND=Agg
+
+# Configure R memory limits
+RUN echo "R_MAX_VSIZE=4Gb" >> /usr/local/lib/R/etc/Renviron
+RUN echo "R_MAX_MEM_SIZE=2Gb" >> /usr/local/lib/R/etc/Renviron
+
+# Command to run the application with Gunicorn
+# This uses the $PORT environment variable that Render sets automatically
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 1 --timeout 300 legal_backend.pipeline_analysis.goodsam_pattern:app

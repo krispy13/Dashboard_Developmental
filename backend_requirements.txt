@@ -1,0 +1,8 @@
+Flask
+flask_cors
+matplotlib
+numpy
+pandas
+rpy2==3.5.11
+scikit_learn
+scipy

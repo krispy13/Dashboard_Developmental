@@ -1,0 +1,8 @@
+Flask==3.1.0
+flask_cors==5.0.1
+matplotlib==3.10.1
+numpy==2.2.3
+pandas==2.2.3
+rpy2==3.5.17
+scikit_learn==1.6.1
+scipy==1.15.2
