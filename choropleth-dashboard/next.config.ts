@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 // Determine the backend URL for client-side reference
 const getBackendUrl = () => {
@@ -18,6 +19,10 @@ const nextConfig: NextConfig = {
     // Make the backend URL available to client code
     // But we'll use the API route for actual requests
     BACKEND_URL: getBackendUrl(),
+  },
+  webpack: (config) => {
+    config.resolve.alias["@" ] = path.resolve(__dirname, "src");
+    return config;
   },
 }
 
