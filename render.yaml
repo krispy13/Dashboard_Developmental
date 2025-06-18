@@ -6,6 +6,7 @@ services:
     dockerfilePath: ./Dockerfile.backend
     plan: free
     healthCheckPath: /health
+    healthCheckTimeout: 300s
     envVars:
       - key: FLASK_ENV
         value: production
